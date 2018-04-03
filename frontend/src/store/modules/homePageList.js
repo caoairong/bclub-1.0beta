@@ -4,7 +4,7 @@ const homePageList = {
   },
   mutations: {
     set_backForNav (state, payload) {
-      state.backForNav.unshift(payload)
+      state.backForNav.unshift(state.backForNav)
     }
   },
   actions: {

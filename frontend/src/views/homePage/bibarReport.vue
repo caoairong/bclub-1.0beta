@@ -23,8 +23,15 @@ export default {
         'content': ''
       },
       backData: {
+        'author': '',
+        'avatar': '',
+        'created_at': '',
+        'updated_at': '',
+        'title': '',
         'content': '',
-        'url': ''
+        'is_good': 0,
+        'is_bad': 0,
+        replt_count: 0
       },
       nowShowApi: ['topic', 'bar', 'bar', 'bar'],
       isHide: false,
@@ -37,13 +44,15 @@ export default {
     },
     getContent: function () {
       this.topicData.content = this.editorContent
-      post(`api/${this.nowShowApi[this.toApi]}${this.toApi === 1 ? '/question' : this.toApi === 2 ? '/answer' : this.toApi === 3 ? '/comment' : ''}/replies/${this.toApi === 2 ? this.talkId : this.contentId}`, this.topicData).then(data => {
+      post(`/api/${this.nowShowApi[this.toApi]}${this.toApi === 1 ? '/question' : this.toApi === 2 ? '/answer' : this.toApi === 3 ? '/comment' : ''}/replies/${this.toApi === 2 ? this.talkId : this.contentId}`, this.topicData).then(data => {
         //   评论发送完毕
         if (data.message === '未登录') {
           alert('先去登录')
           this.$router.push('/login')
         } else {
-          this.backData = data.data.content
+          this.backData.content = data.data.content
+          this.backData.avatar = data.data.avatar
+          this.backData.author = data.data.author
           this.replies = data.data.replies
           this.$emit('backReplies', this.replies)
           this.$emit('backList', this.backData)

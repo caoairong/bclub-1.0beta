@@ -71,7 +71,7 @@
                     </div>
                     <div class="clear hline"></div>
                     <!--chart-->
-                    <div id="mainChart" :style="{width:'780px',height:'450px'}"></div>
+                    <div class="mainChart" :style="{width:'780px',height:'450px'}"></div>
                 </article>
             </article>
 </div>
@@ -126,7 +126,7 @@ export default{
       })
     },
     drawChart () {
-      Highcharts.stockChart('mainChart', {
+      $('.mainChart').highcharts({
         rangeSelector: {
           selected: 1,
           inputDateFormat: '%Y-%m-%d'

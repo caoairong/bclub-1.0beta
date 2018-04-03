@@ -58,12 +58,11 @@ export default {
   data () {
     return {
       userForm: {},
-      formUrl: 'api/login',
+      formUrl: '/api/login',
       unamePrompt: '',
       upwdPrompt: '',
       controlPrompt: '',
-      isLogin: true,
-      controlImg: 'http://sinitek.ymhui999.com:1234/api/captcha'
+      controlImg: '/api/captcha'
     }
   },
   mounted () {
@@ -97,7 +96,13 @@ export default {
         if (data.message === '验证码错误') {
           this.controlPrompt = data.message
           this.changeControl()
+          return
+        } else if (data.message === '用户名或密码错误') {
+          this.changeControl()
+          alert(data.message)
+          return
         } else if (this.userForm.captcha === '' || this.userForm.captcha === undefined) {
+          this.changeControl()
           this.controlPrompt = '验证码不能为空'
           return
         } else {

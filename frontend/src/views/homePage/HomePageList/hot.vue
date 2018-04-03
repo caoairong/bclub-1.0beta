@@ -1,6 +1,7 @@
 <template>
   <div>
   <div class="bibar-tabAll">
+    <!-- {{[articles]}} -->
     <div class="bibar-tabitem fade in active" :key="index" id="bibar-newstab1" v-for="(tmp,index) in [...getNavaVal, ...articles]">
       <div class="bibar-indexNewsList">
         <div class="bibar-indexNewsItem">
@@ -14,7 +15,7 @@
           </div>
           <div class="set">
             <ul class="bibar-indexNewsItem-infro">
-              <li class="set-choseOne"> <a href="javascript:void(0);" class="icon-quan mr15 active"  @click="changeNum(0,tmp.id)"><i class="iconfont icon-handgood"></i><span>{{isGood}}</span></a> <a href="javascript:void(0);" class="icon-quan set-choseOne" @click="changeNum(1,tmp.id)"><i class="iconfont icon-handbad"></i><span>{{ishandbad}}</span></a> </li>
+              <li class="set-choseOne"> <a href="javascript:void(0);" class="icon-quan mr15"  @click="changeNum(0,tmp.id)"><i class="iconfont icon-handgood"></i><span>{{tmp.is_good}}</span></a> <a href="javascript:void(0);" class="icon-quan set-choseOne" @click="changeNum(1,tmp.id)"><i class="iconfont icon-handbad"></i><span>{{tmp.is_bad}}</span></a> </li>
               <li class="set-discuss" @click="showDiscuss(index,tmp.id)">
                 <a href="javascript:void(0);">
                   <i class="iconfont icon-pinglun"></i> 评论
@@ -126,17 +127,6 @@ export default{
       showComment: false,
       showReport: false,
       nowData: [],
-      nowDataPl: {
-        'author': '',
-        'avatar': '',
-        'created_at': '',
-        'updated_at': '',
-        'title': '',
-        'content': '',
-        'is_good': 0,
-        'is_bad': 0,
-        replt_count: 0
-      },
       commentShow: false,
       backFt: {
         'author': '',
@@ -149,7 +139,8 @@ export default{
         'is_bad': 0,
         replt_count: 0
       },
-      toId: 0
+      toId: 0,
+      upId: 0
     }
   },
   components: {
@@ -166,7 +157,6 @@ export default{
     })
   },
   mounted () {
-    // this.getNavaVal = this.getNavData
   },
   // watch: {
   //   getNavaVal (val) {
@@ -174,11 +164,12 @@ export default{
   //   }
   // },
   methods: {
+    // 点赞吐槽
     changeNum (isNum, id) {
       $('.set-choseOne>a:eq(' + isNum + ')').addClass('active').siblings().removeClass('active')
       if (isNum === 0) {
         get(`/api/topic/${id}/up`).then(data => {
-          this.isGood = data.data
+          // $('')
         })
       } else {
         get(`/api/topic/${id}/down`).then(data => {
@@ -186,12 +177,14 @@ export default{
         })
       }
     },
+    // 去详情页
     goDetail (id) {
       this.lid = id
       this.$router.push(`/details/${this.lid}`)
     },
+    // 评论
     showDiscuss (index, id) {
-      get(`api/topic/${id}/1`).then(data => {
+      get(`/api/topic/${id}/1`).then(data => {
         this.nowData = data.data.replies
         // console.log(data.data.replies)
       })
@@ -212,18 +205,18 @@ export default{
       $('.editor-toolbar').find('.wangeditor>.editor').css({'min-height': '130px', 'padding-bottom': '37px'})
       $('.editor-toolbar').find('.wangeditor>div:eq(2)').css('display', 'none')
     },
+    // 是否显示评论默认框
     commentShowFun () {
       this.showReport = true
       this.commentShow = false
     },
+    // 评论富文本框
     showContent (data) {
-      this.nowDataPl.content = data
-      console.log(this.nowDataPl)
-      this.nowData.unshift(this.nowDataPl)
+      this.nowData.unshift(data)
+      console.log(this.nowData)
     },
     showFtContentFun (ftData) {
-      this.backFt.content = ftData
-      this.articles.unshift(this.backFt)
+      this.getNavaVal.unshift(ftData)
     }
   }
 }
