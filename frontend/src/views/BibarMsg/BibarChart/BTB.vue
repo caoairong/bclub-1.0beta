@@ -2,8 +2,8 @@
 <div>
    <article class="bibar-box bibar-boxindex1">
                 <div class="bibar-indexDisplay">
-                    <div class="bibar-indexDisplay-header">
-                        <div class="logopic"><img src="../../../assets/img/logo-coin-BTC.png"></div>
+                    <div class="bibar-indexDisplay-header" @click="toMsgDetail(bibarData.id)">
+                        <div class="logopic"><img :src="bibarData.picture"></div>
                         <div class="logonameEnglish">{{bibarData.zhName}}</div>
                         <div class="logonameChinese">{{bibarData.symbol}}</div>
                     </div>
@@ -90,7 +90,7 @@ export default{
       id: 'chart',
       ohlc: [],
       volumeData: [],
-      chartBox: 'chartBox' + Math.floor(Math.random() * 1000),
+      chartBox: 'chartBox',
       bibarData: {},
       kline: {},
       price: null,
@@ -98,57 +98,21 @@ export default{
       BTC_RATE: 0,
       cny_price: 0,
       change1h: null,
-      isDown: false
+      isDown: false,
+      msgId: '',
+      chartList: [],
+      bId: 'bitcoin'
     }
   },
   mounted () {
-    this.getChartData()
-  },
-  filters: {
-    // 保留小数
-    toFixFun (value, num) {
-      return parseInt(value).toFixed(num)
-    },
-    // 逗号分隔数字
-    formatNum (value, num) {
-      num = num > 0 && num <= 20 ? num : 0
-      value = parseFloat((value + '').replace(/[^\d.-]/g, '')).toFixed(num) + ''
-      let l = value.split('.')[0].split('').reverse()
-      let r = value.split('.')[1]
-      let t = ''
-      for (let i = 0; i < l.length; i++) {
-        t += l[i] + ((i + 1) % 3 === 0 && (i + 1) !== l.length ? ',' : '')
-      }
-      return t.split('').reverse().join('') + '.' + r
-    },
-    // 人民币转换
-    cnyFun (value, rate, num) {
-      let rateNum = (parseInt(value) * rate).toFixed(num).toString()
-      let len = rateNum.length
-      if (len <= 3) {
-        return rateNum
-      } else {
-        let r = len % 3
-        return r > 0 ? rateNum.slice(0, r) + ',' + rateNum.slice(r, len).match(/\d{3}/g).join(',') : rateNum.slice(r, len).match(/\d{3}/g).join(',')
-      }
-    },
-    // 比特币转换
-    bitcoinFun (value, rate, num) {
-      let rateNum = (parseInt(value) * rate).toFixed(num).toString()
-      let len = rateNum.length
-      if (len <= 3) {
-        return rateNum
-      } else {
-        let r = len % 3
-        return r > 0 ? rateNum.slice(0, r) + ',' + rateNum.slice(r, len).match(/\d{3}/g).join(',') : rateNum.slice(r, len).match(/\d{3}/g).join(',')
-      }
-    }
+    this.getChartData(this.bId)
   },
   methods: {
-    getChartData () {
+    // 获取chart数据
+    getChartData (bId) {
       // https://data.jianshukeji.com/stock/history/000001
       var that = this
-      $.getJSON('/api/currency_news/bitcoin', function (data) {
+      $.getJSON(`/api/currency_news/${bId}`, function (data) {
         // main数据
         that.bibarData = data.data
         // 人民币汇率
@@ -165,7 +129,6 @@ export default{
         } else {
           that.isDown = true
         }
-        console.log(that.bibarData)
         // k线图
         that.kline = that.bibarData.kline
         if (data.message !== 'success') {
@@ -187,6 +150,7 @@ export default{
         that.drawChart()
       })
     },
+    // 绘制chart
     drawChart () {
       Highcharts.stockChart(this.chartBox, {
         rangeSelector: {
@@ -282,10 +246,22 @@ export default{
           yAxis: 1
         }]
       })
+    },
+    // 去chart详情
+    toMsgDetail (id) {
+      this.msgId = id
+      this.$router.push(`/msgDetail/${this.msgId}`)
+    },
+    // 显示当前chart
+    showNowChild (id) {
+      // console.log(this)
+      this.chartBox = this.chartBox + Math.floor(Math.random() * 1000)
+      this.getChartData(id)
     }
   }
 }
 </script>
 <style>
 .bibar-indexDisplay-data i.icon-USD{font-size: 14px !important;}
+.bibar-box{cursor: pointer;}
 </style>

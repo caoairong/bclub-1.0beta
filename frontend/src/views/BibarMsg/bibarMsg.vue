@@ -1,3 +1,4 @@
+
 <template>
   <div class="main">
     <MainHeader></MainHeader>
@@ -8,67 +9,24 @@
         <!--主体左侧-->
         <section class="bibar-Mainleft">
             <div class="panel-group" id="accordion">
-              <div class="panel panel-default">
-                <div id='collapseOne' class="panel-collapse collapse in">
+              <div class="panel panel-default" v-for="(item,index) in summaryList" :key='index'>
+                <!-- <div id='collapseOne' class="panel-collapse collapse" :class="{in:chartShow === index}"> -->
+                <div id='collapseOne' class="panel-collapse collapse in" v-if="chartShow === index">
                   <div class="panel-body">
                     <!--BTB信息框-->
-                    <btb></btb>
+                    <btb ref='toNowChild'></btb>
                   </div>
                 </div>
                  <!-- 币种列表 -->
                  <a data-toggle="collapse" class="panel-tb-hd" data-parent="#accordion" href='#collapseOne'>
-                  <div class="bibar-list-item">
+                  <div class="bibar-list-item" @click="chartShowFun(index, item.id)">
                   <ul>
-                    <li><a href="#">比特币<span>BTC</span></a></li>
-                    <li><a href="#">3247.92</a></li>
-                    <li><a href="#"><span>-</span>9.00(-0.28%)</a></li>
-                    <li><a href="#">56.44亿</a></li>
-                    <li><a href="#">45615684.78亿</a></li>
-                    <li><a href="#"><i style="font-size:16px; color:#909499;" class="iconfont">&#xe604;</i>···</a></li>
-                  </ul>
-                </div>
-                 </a>
-                <!-- <div class="pt20"></div> -->
-              </div>
-              <div class="panel panel-default">
-                <div id="collapseTwo"  class="panel-collapse collapse">
-                  <div class="panel-body">
-                    <!--BTB信息框-->
-                    <btb></btb>
-                  </div>
-                </div>
-                 <!-- 币种列表 -->
-                  <a data-toggle="collapse" class="panel-tb-hd" data-parent="#accordion" href='#collapseTwo'>
-                  <div class="bibar-list-item">
-                  <ul>
-                    <li><a href="#">比特币<span>BTC</span></a></li>
-                    <li><a href="#">3247.92</a></li>
-                    <li><a href="#"><span>-</span>9.00(-0.28%)</a></li>
-                    <li><a href="#">56.44亿</a></li>
-                    <li><a href="#">45615684.78亿</a></li>
-                    <li><a href="#"><i style="font-size:16px; color:#909499;" class="iconfont">&#xe604;</i>···</a></li>
-                  </ul>
-                </div>
-                 </a>
-                <!-- <div class="pt20"></div> -->
-              </div>
-              <div class="panel panel-default">
-                <div id="collapseThree"  class="panel-collapse collapse">
-                  <div class="panel-body">
-                    <!--BTB信息框-->
-                    <btb></btb>
-                  </div>
-                </div>
-                 <!-- 币种列表 -->
-                 <a data-toggle="collapse" class="panel-tb-hd" data-parent="#accordion" href='#collapseThree'>
-                  <div class="bibar-list-item">
-                  <ul>
-                    <li><a href="#">比特币<span>BTC</span></a></li>
-                    <li><a href="#">3247.92</a></li>
-                    <li><a href="#"><span>-</span>9.00(-0.28%)</a></li>
-                    <li><a href="#">56.44亿</a></li>
-                    <li><a href="#">45615684.78亿</a></li>
-                    <li><a href="#"><i style="font-size:16px; color:#909499;" class="iconfont">&#xe604;</i>···</a></li>
+                    <li><a href="javascript:void(0)"><span><img :src="item.picture" alt=""></span> {{item.name_ch}} - {{item.symbol}}</a></li>
+                    <li><a href="javascript:void(0)"><i class="iconfont icon-CNY"></i>{{item.price | cnyFun(CNY,2)}}</a></li>
+                    <li><a href="javascript:void(0)">{{item.change_1h}}</a></li>
+                    <li><a href="javascript:void(0)"><i class="iconfont icon-CNY"></i>{{item.volume | cnyFunStr(CNY,2)}}</a></li>
+                    <li><a href="javascript:void(0)" :title="item.marketcap"><i class="iconfont icon-CNY"></i>{{item.marketcap | cnyFunStr(CNY,2)}}</a></li>
+                    <li><a href="javascript:void(0)"><i style="font-size:16px; color:#909499;" class="iconfont">&#xe604;</i>···</a></li>
                   </ul>
                 </div>
                  </a>
@@ -101,6 +59,7 @@
     </section>
   </div>
 </template>
+
 <script>
 import MainHeader from '../common/header.vue'
 import btb from './BibarChart/BTB.vue'
@@ -108,6 +67,7 @@ import eth from './BibarChart/ETH.vue'
 import xrp from './BibarChart/XRP.vue'
 import BibarRight from './BibarRight/bivarRight.vue'
 import BibarPostContent from '../homePage/bibarPostContent.vue'
+import {get} from '../../utils/http'
 
 export default{
   data: function () {
@@ -117,7 +77,15 @@ export default{
       state: 0,
       i: 1,
       collapseId: '',
-      hrefCollapse: ''
+      hrefCollapse: '',
+      cpno: 1,
+      cpageSize: 10,
+      BTC: null,
+      CNY: null,
+      summaryList: [],
+      upSty: false,
+      chartShow: 0,
+      chartState: false
     }
   },
   components: {
@@ -131,16 +99,19 @@ export default{
   created () {
     this.collapseId = `collapse${this.i++}`
     this.hrefCollapse = `#${this.collapseId}`
+    get(`/api/blist/${this.cpno}/${this.cpageSize}`).then((data) => {
+      // debugger
+      console.log(data)
+      this.BTC = data.data.exrateData.BTC
+      this.CNY = data.data.exrateData.CNY
+      this.summaryList = data.data.summaryList
+    })
+    if (this.chartShow === 0) {
+      this.chartState = true
+    }
   },
   mounted () {
     $('.mainBibar-editor').find('.wangeditor').css({'width': '860px'})
-    let scope = $('.bibar-list-item ul li:eq(2)').find('span').html()
-    let scopeStyle = $('.bibar-list-item ul li:eq(2)').find('a')
-    if (scope === '-') {
-      scopeStyle.addClass('down-avtive')
-    } else if (scope === '+') {
-      scopeStyle.addClass('up-avtive')
-    }
   },
   methods: {
     // 文章列表切换事件
@@ -152,6 +123,18 @@ export default{
     },
     BibarContentFun (data) {
       this.$refs.showBibarContent.showBibarContentFun(data)
+    },
+    // 显示chart
+    chartShowFun (index, id) {
+      // debugger
+      console.log(arguments)
+      if (index !== this.chartShow) {
+        this.chartShow = index
+      }
+      console.log(this)
+      console.log(this.$refs.toNowChild[0])
+      this.$refs.toNowChild[0].showNowChild(id)
+      // console.log(document.body.scrollTop)
     }
   }
 }
@@ -166,17 +149,19 @@ export default{
 }
 .bibar-box{box-shadow: none;}
 .bibar-list-item ul li{
-  float: left;
-  margin: 10px 30px;
+    float: left;
+    margin: 10px 0;
+    width: 16%;
+    text-align: center;
 }
 .bibar-list-item ul li a{
     font-size: 16px;
     font-weight: bold;
 }
-.bibar-list-item ul li:first-child a span{
-  display: block;
-  color: #909499;
-  font-size: 14px;
+.bibar-list-item ul li:first-child a span img{
+    width: 20px;
+    height: 20px;
+    margin-top: -3px;
 }
 .panel-tb-hd{
   display: block;
@@ -193,5 +178,12 @@ export default{
   border:none !important;
 }
 .panel-body, .bibar-boxindex1{padding-bottom: 0 !important;}
-
+.panel-collapse{height: auto !important;}
+.bibar-list-item ul li a{
+    width: 16%;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    -o-text-overflow: ellipsis;
+    overflow: hidden;
+}
 </style>
